@@ -118,7 +118,7 @@ bool ParseSignedInt(DecoderBuffer *buffer, int32_t *value) {
   uint32_t v;
   if (!ParseUnsignedInt(buffer, &v))
     return false;
-  *value = (sign < 0) ? -v : v;
+  *value = (sign < 0) ? -int32_t(v) : v;
   return true;
 }
 

@@ -526,4 +526,9 @@ else ()
                         "${GTEST_SOURCE_DIR}/googletest/include")
     target_link_libraries(draco_tests draco gtest)
   endif ()
+  
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    target_compile_definitions(draco_core PUBLIC -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS )
+  endif() 
+  
 endif ()
