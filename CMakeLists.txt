@@ -326,6 +326,8 @@ set(draco_mesh_sources
     "${draco_root}/mesh/edgebreaker_traverser.h"
     "${draco_root}/mesh/mesh.cc"
     "${draco_root}/mesh/mesh.h"
+    "${draco_root}/mesh/mesh_are_equivalent.cc"
+    "${draco_root}/mesh/mesh_are_equivalent.h"
     "${draco_root}/mesh/mesh_attribute_corner_table.cc"
     "${draco_root}/mesh/mesh_attribute_corner_table.h"
     "${draco_root}/mesh/mesh_cleanup.cc"
@@ -348,19 +350,20 @@ set(draco_point_cloud_sources
     "${draco_root}/point_cloud/point_cloud_builder.h")
 
 set(draco_points_common_sources
+    "${draco_root}/compression/point_cloud/algorithms/point_cloud_compression_method.h"
     "${draco_root}/compression/point_cloud/algorithms/point_cloud_types.h"
     "${draco_root}/compression/point_cloud/algorithms/quantize_points_3.h"
     "${draco_root}/compression/point_cloud/algorithms/queuing_policy.h")
 
 set(draco_points_decoder_sources
-    "${draco_root}/compression/point_cloud/algorithms/float_points_kd_tree_decoder.cc"
-    "${draco_root}/compression/point_cloud/algorithms/float_points_kd_tree_decoder.h"
+    "${draco_root}/compression/point_cloud/algorithms/float_points_tree_decoder.cc"
+    "${draco_root}/compression/point_cloud/algorithms/float_points_tree_decoder.h"
     "${draco_root}/compression/point_cloud/algorithms/integer_points_kd_tree_decoder.cc"
     "${draco_root}/compression/point_cloud/algorithms/integer_points_kd_tree_decoder.h")
 
 set(draco_points_encoder_sources
-    "${draco_root}/compression/point_cloud/algorithms/float_points_kd_tree_encoder.cc"
-    "${draco_root}/compression/point_cloud/algorithms/float_points_kd_tree_encoder.h"
+    "${draco_root}/compression/point_cloud/algorithms/float_points_tree_encoder.cc"
+    "${draco_root}/compression/point_cloud/algorithms/float_points_tree_encoder.h"
     "${draco_root}/compression/point_cloud/algorithms/integer_points_kd_tree_encoder.cc"
     "${draco_root}/compression/point_cloud/algorithms/integer_points_kd_tree_encoder.h")
 
@@ -389,6 +392,7 @@ set(draco_test_sources
     "${draco_root}/io/ply_decoder_test.cc"
     "${draco_root}/io/ply_reader_test.cc"
     "${draco_root}/io/point_cloud_io_test.cc"
+    "${draco_root}/mesh/mesh_are_equivalent_test.cc"
     "${draco_root}/mesh/mesh_cleanup_test.cc"
     "${draco_root}/mesh/mesh_test.cc"
     "${draco_root}/mesh/triangle_soup_mesh_builder_test.cc"
@@ -532,7 +536,20 @@ else ()
                         "${GTEST_SOURCE_DIR}/googletest/include")
     target_link_libraries(draco_tests draco gtest)
   endif ()
-  
+  # Collect all of the header files in the tree, and add an install rule for
+  # each.
+  file(GLOB_RECURSE draco_headers RELATIVE ${draco_root} "*.h")
+  foreach (filename ${draco_headers})
+    get_filename_component(file_directory ${filename} DIRECTORY)
+    install(FILES ${filename} DESTINATION
+            "${CMAKE_INSTALL_PREFIX}/include/draco/${file_directory}")
+  endforeach()
+
+  # Add install rules for lib and executable targets.
+  install(TARGETS dracodec draco DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+  install(TARGETS draco_decoder draco_encoder DESTINATION
+          "${CMAKE_INSTALL_PREFIX}/bin")
+
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     target_compile_definitions(draco_core PUBLIC -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS )
   endif() 
